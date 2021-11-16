@@ -15,6 +15,7 @@ import (
 const Bucket = "XxxEdge"
 
 type boltStorage struct {
+	basePath string
 	db *bolt.DB
 }
 
@@ -35,7 +36,9 @@ func NewBoltStorage(dbFile string) (storage.Storage, error) {
 		klog.Fatalf("init bolt storage error: %v", err)
 		return nil, err
 	}
+
 	onstorage := &boltStorage{db: db}
+	onstorage.basePath = dbFile
 
 	// init
 	// Start a writable transaction.
@@ -161,3 +164,6 @@ func (bs *boltStorage) listKey(key string) string {
 	return strings.ReplaceAll(fmt.Sprintf("%s_%s", key, "list"), "/", "_")
 }
 
+func (bs *boltStorage) Path() string {
+	return bs.basePath
+}

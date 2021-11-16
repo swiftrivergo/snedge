@@ -21,16 +21,19 @@ func main() {
 	//NewBoltStorage
 	//default dbfile: CacheBaseDir = "/etc/kubernetes/cache/"
 
-	s, err := storage.CreateStorage("")
+	s, err := storage.CreateStorage("c:/etc/k8s/cache")
 	if err != nil {
 		os.Exit(-1)
 	}
 
-	fmt.Println("storage dir:", s.CacheStorageDir())
-	store, err := boltstorage.NewBoltStorage(s.CacheStorageDir())
+	fmt.Println("storage:", s.StorageBasePath())
+	store, err := boltstorage.NewBoltStorage(s.StorageBasePath())
 	if err != nil {
 		klog.Errorln(err)
 	}
+	fmt.Println("bolt storage path:", store.Path())
+	baseBath, _ := storage.DefaultStorageBasePath()
+	fmt.Println("default storage base path:", baseBath)
 
 	key := "hello"
 	value := "bolt"

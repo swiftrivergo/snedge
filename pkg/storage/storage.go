@@ -5,6 +5,7 @@ type Storage interface {
 	Delete(key string) error
 	Update(key string, cache []byte) error
 	Get(key string) ([]byte, error)
+	Path() string
 
 	// GetOne Get One
 	//GetOne() (string, []byte)
