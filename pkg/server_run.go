@@ -8,14 +8,18 @@ import (
 	"net/url"
 )
 
-const target = "http://172.16.0.5:8081"
+const target = "172.16.0.5:8081"
+const source = "127.0.0.1:8081"
+const protocol = "http://"
 
 func main() {
 
-	if dest, err := url.Parse(target); err != nil {
+	if dest, err := url.Parse(protocol+target); err != nil {
 		klog.Errorln(err)
 	} else {
-		if err := http.ListenAndServe("127.0.0.1:8081", proxy.ReverseProxy(dest)); err != nil {
+		p := proxy.NewProxy()
+		p.SetTarget(dest)
+		if err := http.ListenAndServe(source, proxy.ReverseProxy(dest)); err != nil {
 			klog.Errorln(err)
 		}
 	}

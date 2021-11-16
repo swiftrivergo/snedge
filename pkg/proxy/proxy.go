@@ -37,10 +37,10 @@ func (p *Proxy) SetTarget(url *url.URL) {
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	ServeHTTP(rw, p.rebuildRequestHost(req))
+	serveHTTP(rw, p.rebuildRequestHost(req))
 }
 
-func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 	uri := *target + r.RequestURI
 	klog.Infoln(r.Method + ": " + uri)
