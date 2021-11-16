@@ -2,9 +2,11 @@ package bolt
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/swiftrivergo/snedge/pkg/storage"
 	bolt "go.etcd.io/bbolt"
 	"k8s.io/klog/v2"
+	"path/filepath"
 	_ "path/filepath"
 	"strings"
 	"time"
@@ -16,41 +18,46 @@ type boltStorage struct {
 	db *bolt.DB
 }
 
-func NewBoltStorage(dbFile string) storage.Storage {
+func NewBoltStorage(dbFile string) (storage.Storage, error) {
+	fmt.Println("db dir:", filepath.Dir(dbFile))
 	_, err := storage.CreateStorage(dbFile)
 	if err != nil {
-		return nil
+		return nil, err
 	}
+
+	base := filepath.Base(dbFile)
+	if base == "" {
+		return nil, errors.New("file is invalid")
+	}
+
 	db, err := bolt.Open(dbFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		klog.Fatalf("init bolt storage error: %v", err)
+		return nil, err
 	}
+	onstorage := &boltStorage{db: db}
 
 	// init
 	// Start a writable transaction.
 	tx, err := db.Begin(true)
 	if err != nil {
 		klog.Fatalf("init bolt storage error: %v", err)
+		return onstorage, err
 	}
-	defer func(tx *bolt.Tx) {
-		err := tx.Rollback()
-		if err != nil {
-			klog.Errorln(err)
-		}
-	}(tx)
 
 	// Use the transaction...
 	_, err = tx.CreateBucketIfNotExists([]byte(Bucket))
 	if err != nil {
 		klog.Fatalf("init bolt storage error: %v", err)
+		return onstorage, nil
 	}
 
 	// Commit the transaction and check for error.
 	if err := tx.Commit(); err != nil {
 		klog.Fatalf("init bolt storage error: %v", err)
+		return onstorage, nil
 	}
-
-	return &boltStorage{db: db}
+	return onstorage, nil
 }
 
 func (bs *boltStorage) Create(key string, data []byte) error {
