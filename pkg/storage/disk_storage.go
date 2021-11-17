@@ -15,11 +15,23 @@ const (
 
 var base = ""
 
-type cacheStorage struct {
+type CacheStorage struct {
+	storage Storage
 	basePath string
 }
 
-func (c cacheStorage) StorageBasePath() string {
+func NewCacheStorage(s Storage) *CacheStorage {
+	var path string
+	if s != nil {
+		path = s.Path()
+	}
+	return &CacheStorage{
+		storage: s,
+		basePath: path,
+	}
+}
+
+func (c CacheStorage) StorageBasePath() string {
 	return c.basePath
 }
 
@@ -43,7 +55,7 @@ func DefaultStorageBasePath() (string, error) {
 }
 
 // CreateStorage create a storage.Store for backend storage
-func CreateStorage(cachePath string) (*cacheStorage, error) {
+func CreateStorage(cachePath string) (*CacheStorage, error) {
 	if cachePath == "" {
 		system := runtime.GOOS
 		if system == "linux" {
@@ -61,7 +73,7 @@ func CreateStorage(cachePath string) (*cacheStorage, error) {
 		}
 	}
 
-	store := &cacheStorage{
+	store := &CacheStorage{
 		basePath: base,
 	}
 

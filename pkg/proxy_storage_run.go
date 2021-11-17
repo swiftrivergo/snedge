@@ -36,11 +36,11 @@ func main() {
 	fmt.Println("default storage base path:", baseBath)
 
 	key := "hello"
-	value := "bolt"
-	err = store.Create(key, []byte(value))
-	if err != nil {
-		klog.Errorln(err)
-	}
+	//value := "bolt"
+	//err = store.Create(key, []byte(value))
+	//if err != nil {
+	//	klog.Errorln(err)
+	//}
 
 	data, err := store.Get(key)
 	if err != nil {
