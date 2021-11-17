@@ -21,7 +21,7 @@ func main() {
 	//NewBoltStorage
 	//default dbfile: CacheBaseDir = "/etc/kubernetes/cache/"
 
-	s, err := storage.CreateStorage("c:/etc/k8s/cache")
+	s, err := storage.CreateStorage("")
 	if err != nil {
 		os.Exit(-1)
 	}

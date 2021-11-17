@@ -10,7 +10,7 @@ import (
 
 const (
 	CacheBaseLinuxDir = "/etc/kubernetes/cache"
-	CacheBaseWindowDir = "c:/etc/kubernetes/cache"
+	CacheBaseWindowDir = "c:\\etc\\kubernetes\\cache"
 )
 
 var base = ""
