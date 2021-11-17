@@ -69,12 +69,10 @@ func main() {
 		}
 
 		randProxy := proxy.NewRandReverseProxy(urls)
-
 		fmt.Println("urls:", urls)
 		err := http.ListenAndServe(":8082", randProxy)
 		if err != nil {
 			fmt.Println(err)
 		}
 	}
-
 }

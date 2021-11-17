@@ -17,6 +17,7 @@ import (
 var target *string
 
 type director func(r *http.Request)
+type handleFunc func(rw *http.ResponseWriter, r *http.Request)
 
 type Proxy struct {
 	target *url.URL
@@ -43,7 +44,7 @@ func (p *Proxy) SetTarget(url *url.URL) {
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	serveHTTP(rw, p.customDirectorPolicy(req))
+	serveHTTP(rw, p.direct(req))
 }
 
 func serveHTTP(w http.ResponseWriter, r *http.Request) {
@@ -108,15 +109,15 @@ func (p *Proxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	return ReverseProxy(target)
 }
 
-func (p *Proxy) customDirectorPolicy(r *http.Request) *http.Request {
-	return customDirectorPolicy(p.target, r)
-}
-
 func ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	if target == nil {
 		panic(errors.New("target is nil"))
 	}
 	return httputil.NewSingleHostReverseProxy(target)
+}
+
+func (p *Proxy) direct(r *http.Request) *http.Request {
+	return customDirectorPolicy(p.target, r)
 }
 
 func customDirectorPolicy(target *url.URL, r *http.Request) *http.Request {

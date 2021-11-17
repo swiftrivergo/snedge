@@ -73,9 +73,9 @@ func (c *Client) Connect() error {
 		headers.Add("Authorization", "Bearer "+c.Token)
 	}
 
-	url := c.Remote
-	if !strings.HasPrefix(url, "ws") {
-		url = "ws://" + url
+	remote := c.Remote
+	if !strings.HasPrefix(remote, "ws") {
+		remote = "ws://" + remote
 	}
 	var filter func(network, address string) bool
 
@@ -86,6 +86,6 @@ func (c *Client) Connect() error {
 	}
 
 	for {
-		remotedialer.ClientConnect(context.Background(), url + "/tunnel", headers, nil, filter, nil)
+		remotedialer.ClientConnect(context.Background(), remote+ "/tunnel", headers, nil, filter, nil)
 	}
 }
