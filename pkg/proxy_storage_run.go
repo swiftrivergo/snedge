@@ -13,6 +13,8 @@ import (
 )
 
 const target = "172.16.0.5:8081"
+const target2 = "127.0.0.2:8081"
+const target3 = "127.0.0.3:8081"
 const source = "127.0.0.1:8081"
 const protocol = "http://"
 
@@ -51,10 +53,27 @@ func main() {
 	if dest, err := url.Parse(protocol+target); err != nil {
 		klog.Errorln(err)
 	} else {
-		p := proxy.NewProxy()
-		p.SetTarget(dest)
-		if err := http.ListenAndServe(source, proxy.ReverseProxy(dest)); err != nil {
-			klog.Errorln(err)
+		urls := make([]*url.URL,0)
+		urls = append(urls, dest)
+
+		if url2, err := url.Parse(protocol+target2); err != nil {
+			fmt.Println(err)
+		} else {
+			urls = append(urls, url2)
+		}
+
+		if url3, err := url.Parse(protocol+target3); err != nil {
+			fmt.Println(err)
+		} else {
+			urls = append(urls, url3)
+		}
+
+		randProxy := proxy.NewRandReverseProxy(urls)
+
+		fmt.Println("urls:", urls)
+		err := http.ListenAndServe(":8082", randProxy)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 

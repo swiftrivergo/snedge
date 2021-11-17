@@ -3,9 +3,12 @@ package proxy
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
+	_ "k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/klog/v2"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -13,8 +16,11 @@ import (
 
 var target *string
 
+type director func(r *http.Request)
+
 type Proxy struct {
 	target *url.URL
+	director director
 }
 
 func NewProxy() *Proxy {
@@ -37,7 +43,7 @@ func (p *Proxy) SetTarget(url *url.URL) {
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	serveHTTP(rw, p.rebuildRequestHost(req))
+	serveHTTP(rw, p.customDirectorPolicy(req))
 }
 
 func serveHTTP(w http.ResponseWriter, r *http.Request) {
@@ -102,8 +108,8 @@ func (p *Proxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	return ReverseProxy(target)
 }
 
-func (p *Proxy) rebuildRequestHost(r *http.Request) *http.Request {
-	return rebuildRequestHost(p.target, r)
+func (p *Proxy) customDirectorPolicy(r *http.Request) *http.Request {
+	return customDirectorPolicy(p.target, r)
 }
 
 func ReverseProxy(target *url.URL) *httputil.ReverseProxy {
@@ -113,8 +119,16 @@ func ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	return httputil.NewSingleHostReverseProxy(target)
 }
 
-func rebuildRequestHost(target *url.URL, r *http.Request) *http.Request {
+func customDirectorPolicy(target *url.URL, r *http.Request) *http.Request {
+	r.URL.Scheme = "http"
 	r.URL.Host = target.Host
-	r.Host = target.Host
+	r.URL.Path = target.Path
 	return r
+}
+
+func NewRandReverseProxy(targets []*url.URL) *httputil.ReverseProxy {
+	i := rand.Int()%len(targets)
+	target := targets[rand.Int()%len(targets)]
+	fmt.Println("rand url index:", i, target)
+	return httputil.NewSingleHostReverseProxy(target)
 }
