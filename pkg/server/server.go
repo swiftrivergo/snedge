@@ -8,7 +8,7 @@ type Server interface {
 
 type edgeServer struct {
 	hubServer *http.Server
-	proxyServer *http.ServeMux
+	proxyServer *http.Server
 	secureProxyServer *http.Server
 
 	stopChan <-chan struct{}

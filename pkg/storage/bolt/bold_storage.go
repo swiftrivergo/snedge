@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	_ "path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -17,6 +18,7 @@ const Bucket = "XxxEdge"
 type boltStorage struct {
 	basePath string
 	db *bolt.DB
+	sync.Mutex
 }
 
 func NewBoltStorage(dbFile string) (storage.Storage, error) {
@@ -60,10 +62,13 @@ func NewBoltStorage(dbFile string) (storage.Storage, error) {
 		klog.Fatalf("init bolt storage error: %v", err)
 		return onstorage, nil
 	}
+
 	return onstorage, nil
 }
 
 func (bs *boltStorage) Create(key string, data []byte) error {
+	bs.Lock()
+	defer bs.Unlock()
 	return bs.create(key, data)
 }
 
@@ -80,6 +85,8 @@ func (bs *boltStorage) create(key string, data []byte) error {
 }
 
 func (bs *boltStorage) Update(key string, cache []byte) error {
+	bs.Lock()
+	defer bs.Unlock()
 	return bs.update(key, cache)
 }
 
@@ -115,11 +122,18 @@ func (bs *boltStorage) get(key string) ([]byte, error) {
 }
 
 func (bs *boltStorage) Delete(key string) error {
+	bs.Lock()
+	defer bs.Unlock()
 	return bs.delete(key)
 }
 
-func (bs *boltStorage) delete(_ string) error {
-	return nil
+func (bs *boltStorage) delete(key string) error {
+	err := bs.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(Bucket))
+		err := b.Delete([]byte(key))
+		return err
+	})
+	return err
 }
 
 func (bs *boltStorage) storeList(key string, data []byte) error {
