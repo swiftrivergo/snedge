@@ -18,16 +18,11 @@ type SecureProxyServer interface {
 }
 
 type ynEdgeHubServer struct {
-	hub *hubServer
-	proxy *proxyServer
-	secureProxy *secureProxyServer
-	dummyProxy *proxyServer
-	dummySecureProxy *secureProxyServer
-	//hub *http.Server
-	//proxy *http.Server
-	//secureProxy *http.Server
-	//dummyProxy *http.Server
-	//dummySecureProxy *http.Server
+	hub ProxyServer
+	proxy ProxyServer
+	secureProxy SecureProxyServer
+	dummyProxy ProxyServer
+	dummySecureProxy SecureProxyServer
 }
 
 type hubServer struct {
@@ -52,7 +47,7 @@ type secureProxyServer struct {
 	*http.Server
 }
 
-func newHubServer(addr string, handler http.Handler) *hubServer {
+func newHubServer(addr string, handler http.Handler) ProxyServer {
 	hub := &hubServer{}
 	hub.Addr = addr
 	hub.Handler = handler
@@ -61,7 +56,7 @@ func newHubServer(addr string, handler http.Handler) *hubServer {
 	return hub
 }
 
-func newProxyServer(addr string, handler http.Handler) *proxyServer {
+func newProxyServer(addr string, handler http.Handler) ProxyServer {
 	proxy := &proxyServer{}
 	proxy.Addr = addr
 	proxy.Handler = handler
@@ -69,23 +64,32 @@ func newProxyServer(addr string, handler http.Handler) *proxyServer {
 	return proxy
 }
 
-func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config) *secureProxyServer{
-	dummyProxy := &secureProxyServer{}
-	dummyProxy.Addr = addr
-	dummyProxy.Handler = handler
-	dummyProxy.TLSConfig = config
-	dummyProxy.MaxHeaderBytes = 1<<20
-	dummyProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
+func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config) SecureProxyServer{
+	secureProxy := &secureProxyServer{}
+	secureProxy.Addr = addr
+	secureProxy.Handler = handler
+	secureProxy.TLSConfig = config
+	secureProxy.MaxHeaderBytes = 1<<20
+	secureProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 
-	return dummyProxy
+	return secureProxy
 }
 
-func newDummyProxyServer(addr string, handler http.Handler) *proxyServer {
-	return newProxyServer(addr, handler)
+func newDummyProxyServer(addr string, handler http.Handler) ProxyServer {
+	proxy := &proxyServer{}
+	proxy.Addr = addr
+	proxy.Handler = handler
+	proxy.MaxHeaderBytes = 1<<20
+	return proxy
 }
 
-func newDummySecureProxyServer(addr string, handler http.Handler, config *tls.Config) *secureProxyServer {
-	return newSecureProxyServer(addr, handler, config)
+func newDummySecureProxyServer(addr string, handler http.Handler, config *tls.Config) SecureProxyServer {
+	secureProxy := &secureProxyServer{}
+	secureProxy.Addr = addr
+	secureProxy.Handler = handler
+	secureProxy.MaxHeaderBytes = 1<<20
+	secureProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
+	return secureProxy
 }
 
 func (h *hubServer) ListenAndServe() error {
@@ -104,10 +108,10 @@ func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (se
 	hubMux := mux.NewRouter()
 	registerHandlers(hubMux, cfg)
 
-	var hubSvr *hubServer
-	var proxySvr *proxyServer
-	var dummyProxySvr *proxyServer
-	var dummySecureProxySvr *secureProxyServer
+	var hubSvr ProxyServer
+	var proxySvr ProxyServer
+	var dummyProxySvr ProxyServer
+	var dummySecureProxySvr SecureProxyServer
 
 	hubSvr = newHubServer(cfg.HubServerAddr, hubMux)
 	proxySvr = newProxyServer(cfg.ProxyServerAddr, proxyHandel)
@@ -119,11 +123,7 @@ func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (se
 		}
 
 		dummyProxySvr = newDummyProxyServer(cfg.DummyProxyServerAddr, proxyHandel)
-		dummyProxySvr.MaxHeaderBytes = 1<<20
-
 		dummySecureProxySvr = newDummySecureProxyServer(cfg.DummySecureProxyServerAddr, proxyHandel, cfg.TLSConfig)
-		dummySecureProxySvr.MaxHeaderBytes = 1<<20
-		dummySecureProxySvr.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 	}
 	
 	return &ynEdgeHubServer{
