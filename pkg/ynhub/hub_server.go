@@ -18,31 +18,31 @@ type SecureProxyServer interface {
 }
 
 type ynEdgeHubServer struct {
-	hub ProxyServer
-	proxy ProxyServer
-	secureProxy SecureProxyServer
-	dummyProxy ProxyServer
+	hub              ProxyServer
+	proxy            ProxyServer
+	secureProxy      SecureProxyServer
+	dummyProxy       ProxyServer
 	dummySecureProxy SecureProxyServer
 }
 
 type hubServer struct {
-	Addr string
-	ProxyHandler http.Handler
+	Addr           string
+	ProxyHandler   http.Handler
 	MaxHeaderBytes int //default 1 << 20
 	*http.Server
 }
 
 type proxyServer struct {
-	Addr string
+	Addr         string
 	ProxyHandler http.Handler
 	*http.Server
 }
 
 type secureProxyServer struct {
-	SecureAddr string
-	ProxyHandler http.Handler
-	TTLSConfig *tls.Config
-	TLSNextProto map[string]func(*http.Server, *tls.Conn, http.Handler)
+	SecureAddr     string
+	ProxyHandler   http.Handler
+	TTLSConfig     *tls.Config
+	TLSNextProto   map[string]func(*http.Server, *tls.Conn, http.Handler)
 	MaxHeaderBytes int //default 1 << 20
 	*http.Server
 }
@@ -51,7 +51,7 @@ func newHubServer(addr string, handler http.Handler) ProxyServer {
 	hub := &hubServer{}
 	hub.Addr = addr
 	hub.Handler = handler
-	hub.MaxHeaderBytes = 1<<20
+	hub.MaxHeaderBytes = 1 << 20
 
 	return hub
 }
@@ -64,12 +64,12 @@ func newProxyServer(addr string, handler http.Handler) ProxyServer {
 	return proxy
 }
 
-func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config) SecureProxyServer{
+func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config) SecureProxyServer {
 	secureProxy := &secureProxyServer{}
 	secureProxy.Addr = addr
 	secureProxy.Handler = handler
 	secureProxy.TLSConfig = config
-	secureProxy.MaxHeaderBytes = 1<<20
+	secureProxy.MaxHeaderBytes = 1 << 20
 	secureProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 
 	return secureProxy
@@ -79,7 +79,7 @@ func newDummyProxyServer(addr string, handler http.Handler) ProxyServer {
 	proxy := &proxyServer{}
 	proxy.Addr = addr
 	proxy.Handler = handler
-	proxy.MaxHeaderBytes = 1<<20
+	proxy.MaxHeaderBytes = 1 << 20
 	return proxy
 }
 
@@ -87,7 +87,7 @@ func newDummySecureProxyServer(addr string, handler http.Handler, config *tls.Co
 	secureProxy := &secureProxyServer{}
 	secureProxy.Addr = addr
 	secureProxy.Handler = handler
-	secureProxy.MaxHeaderBytes = 1<<20
+	secureProxy.MaxHeaderBytes = 1 << 20
 	secureProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 	return secureProxy
 }
@@ -125,7 +125,7 @@ func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (se
 		dummyProxySvr = newDummyProxyServer(cfg.DummyProxyServerAddr, proxyHandel)
 		dummySecureProxySvr = newDummySecureProxyServer(cfg.DummySecureProxyServerAddr, proxyHandel, cfg.TLSConfig)
 	}
-	
+
 	return &ynEdgeHubServer{
 		hub:              hubSvr,
 		proxy:            proxySvr,
