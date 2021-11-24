@@ -41,7 +41,7 @@ type proxyServer struct {
 type secureProxyServer struct {
 	SecureAddr     string
 	ProxyHandler   http.Handler
-	TTLSConfig     *tls.Config
+	TLSConfig     *tls.Config
 	TLSNextProto   map[string]func(*http.Server, *tls.Conn, http.Handler)
 	MaxHeaderBytes int //default 1 << 20
 	*http.Server
