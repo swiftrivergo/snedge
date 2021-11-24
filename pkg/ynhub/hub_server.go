@@ -59,11 +59,6 @@ func newHubServer(addr string, handler http.Handler) *hubServer {
 	hub.MaxHeaderBytes = 1<<20
 
 	return hub
-	//return &http.Server{
-	//	Addr:              addr,
-	//	Handler:           handler,
-	//	MaxHeaderBytes:    1<<20,
-	//}
 }
 
 func newProxyServer(addr string, handler http.Handler) *proxyServer {
@@ -72,10 +67,6 @@ func newProxyServer(addr string, handler http.Handler) *proxyServer {
 	proxy.Handler = handler
 
 	return proxy
-	//return &http.Server{
-	//	Addr:              addr,
-	//	Handler:           handler,
-	//}
 }
 
 func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config) *secureProxyServer{
@@ -87,13 +78,6 @@ func newSecureProxyServer(addr string, handler http.Handler, config *tls.Config)
 	dummyProxy.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 
 	return dummyProxy
-	//return &http.Server{
-	//	Addr:              addr,
-	//	Handler:           handler,
-	//	TLSConfig:         config,
-	//	MaxHeaderBytes: 1<<20,
-	//	TLSNextProto:      make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
-	//}
 }
 
 func newDummyProxyServer(addr string, handler http.Handler) *proxyServer {
@@ -116,11 +100,8 @@ func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (se
 	hubMux := mux.NewRouter()
 	registerHandlers(hubMux, cfg)
 
-	//var hubSvr, proxySvr, dummyProxySvr, dummySecureProxySvr *http.Server
-
 	var hubSvr *hubServer
 	var proxySvr *proxyServer
-
 	var dummyProxySvr *proxyServer
 	var dummySecureProxySvr *secureProxyServer
 
@@ -128,8 +109,6 @@ func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (se
 	proxySvr = newProxyServer(cfg.ProxyServerAddr, proxyHandel)
 
 	secureProxySvr := newSecureProxyServer(cfg.SecureProxyServerAddr, proxyHandel, cfg.TLSConfig)
-
-
 	if cfg.EnableDummyIf {
 		if _, err := net.InterfaceByName(cfg.HubAgentDummyIfName); err != nil {
 			return nil, err
@@ -189,5 +168,6 @@ func (s *ynEdgeHubServer) Run() {
 }
 
 func registerHandlers(hubMux *mux.Router, cfg *config.EdgeHubConfig) {
+	//Todo
 
 }
