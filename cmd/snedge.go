@@ -20,13 +20,13 @@ func init() {
 
 // snCmd represents the base command when called without any sub commands.
 var snCmd = &cobra.Command{
-	Use:   "iniCmd",
+	Use:   "ynCmd",
 	Short: "Expose your local endpoints to the Internet.",
 	Long: `
 snCmd combines a reverse proxy and websocket tunnels to expose your internal 
 and development endpoints on another network, or to the public Internet via 
 an exit-server.`,
-	Run: runInlets,
+	Run: runYnCmd,
 }
 
 var versionCmd = &cobra.Command{
@@ -64,14 +64,14 @@ func Execute(version, gitCommit string) error {
 	return nil
 }
 
-func runInlets(cmd *cobra.Command, args []string) {
+func runYnCmd(cmd *cobra.Command, args []string) {
 	printLogo()
 	cmd.Help()
 }
 
 func printLogo() {
-	inletsLogo := aec.WhiteF.Apply(inFigletStr)
-	fmt.Println(inletsLogo)
+	ynCmdLogo := aec.WhiteF.Apply(inFigletStr)
+	fmt.Println(ynCmdLogo)
 }
 
 const inFigletStr = ` _       _      _            _

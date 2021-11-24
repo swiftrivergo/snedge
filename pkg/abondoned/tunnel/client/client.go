@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/swiftrivergo/snedge/pkg/tunnel/transport"
+	"github.com/swiftrivergo/snedge/pkg/abondoned/tunnel/transport"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,7 +13,7 @@ import (
 	"github.com/twinj/uuid"
 )
 
-// Client for inlets
+// Client for ynCmd
 type Client struct {
 	// Remote site for websocket address
 	Remote string

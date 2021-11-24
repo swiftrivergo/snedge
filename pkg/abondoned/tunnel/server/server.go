@@ -4,8 +4,8 @@ import (
 	"crypto/subtle"
 	"fmt"
 	"github.com/rancher/remotedialer"
-	"github.com/swiftrivergo/snedge/pkg/tunnel/router"
-	"github.com/swiftrivergo/snedge/pkg/tunnel/transport"
+	"github.com/swiftrivergo/snedge/pkg/abondoned/tunnel/router"
+	"github.com/swiftrivergo/snedge/pkg/abondoned/tunnel/transport"
 	"github.com/twinj/uuid"
 	"k8s.io/apimachinery/pkg/util/proxy"
 	"log"
@@ -13,13 +13,13 @@ import (
 	"sync"
 )
 
-// Server for the exit-server of inlets
+// Server for the exit-server of ynCmd
 type Server struct {
 
 	// Port serves data to clients
 	Port int
 
-	// ControlPort represents the tunnel to the inlets client
+	// ControlPort represents the tunnel to the ynCmd client
 	ControlPort int
 
 	BindAddr string
@@ -101,9 +101,9 @@ func (s *Server) proxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	inletsID := uuid.Formatter(uuid.NewV4(), uuid.FormatHex)
-	log.Printf("[%s] proxy %s %s %s", inletsID, r.Host, r.Method, r.URL.String())
-	r.Header.Set(transport.InHeader, inletsID)
+	ynCmdID := uuid.Formatter(uuid.NewV4(), uuid.FormatHex)
+	log.Printf("[%s] proxy %s %s %s", ynCmdID, r.Host, r.Method, r.URL.String())
+	r.Header.Set(transport.InHeader, ynCmdID)
 
 	u := *r.URL
 	u.Host = r.Host

@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"crypto/tls"
+	"github.com/swiftrivergo/snedge/pkg/abondoned/tunnel/transport"
 	"net"
 	"net/http"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/rancher/remotedialer"
-	"github.com/swiftrivergo/snedge/pkg/tunnel/transport"
 )
 
 var (

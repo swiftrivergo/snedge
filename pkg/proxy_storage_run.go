@@ -15,18 +15,20 @@ import (
 	"time"
 )
 
-const target = "172.16.0.5:8081"
-const target2 = "127.0.0.2:8081"
-const target3 = "127.0.0.3:8081"
-const target4 = "127.0.0.4:8081"
-const target5 = "127.0.0.5:8081"
-const target6 = "127.0.0.6:8081"
-const target7 = "127.0.0.7:8081"
-const target8 = "127.0.0.8:8081"
-const target9 = "127.0.0.9:8081"
-const target10 = "127.0.0.10:8081"
-const source = "127.0.0.1:8081"
-const protocol = "http://"
+const (
+	target = "172.16.0.5:8081"
+	target2 = "127.0.0.2:8081"
+	target3 = "127.0.0.3:8081"
+	target4 = "127.0.0.4:8081"
+	target5 = "127.0.0.5:8081"
+	target6 = "127.0.0.6:8081"
+	target7 = "127.0.0.7:8081"
+	target8 = "127.0.0.8:8081"
+	target9 = "127.0.0.9:8081"
+	target10 = "127.0.0.10:8081"
+	source = "127.0.0.1:8081"
+	protocol = "http://"
+)
 
 func main() {
 
