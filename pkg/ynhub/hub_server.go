@@ -96,6 +96,10 @@ func (p *proxyServer) ListenAndServe() error {
 	return p.ListenAndServe()
 }
 
+func (s *secureProxyServer) ListenAndServeTLS(certFile, keyFile string) error {
+	return s.ListenAndServeTLS(certFile, keyFile)
+}
+
 func NewYnEdgeHubServer(cfg *config.EdgeHubConfig, proxyHandel http.Handler) (server.HubServer, error) {
 	hubMux := mux.NewRouter()
 	registerHandlers(hubMux, cfg)
