@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,32 +18,58 @@ var target *string
 type director func(r *http.Request)
 type handleFunc func(rw *http.ResponseWriter, r *http.Request)
 
-type Proxy struct {
+type YNProxy struct {
 	target *url.URL
 	director director
 }
 
-func NewProxy() *Proxy {
-	target = flag.String("target", "http://127.0.0.1", "target URL for reverse proxy")
-	flag.Parse()
-
-	parse, err := url.Parse(*target)
-	if err != nil {
-		return nil
-	}
-	return &Proxy{target: parse}
+type Proxy interface {
+	ServeHTTP(rw http.ResponseWriter, req *http.Request)
 }
 
-func (p *Proxy) Target() *url.URL {
+func buildDirector(r *http.Request) director {
+	d := func(req *http.Request) {
+		req = r
+	}
+
+	return d
+}
+
+func NewYNProxy() *YNProxy {
+	s := "http://127.0.0.1"
+	//解析这个 URL 并确保解析没有出错。
+	u, err := url.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	return &YNProxy{
+		target:   u,
+		director: nil,
+	}
+}
+
+func (p *YNProxy) Target() *url.URL {
 	return p.target
 }
 
-func (p *Proxy) SetTarget(url *url.URL) {
+func (p *YNProxy) SetTarget(url *url.URL) {
 	p.target = url
 }
 
-func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	serveHTTP(rw, p.direct(req))
+func NewProxyWith(target *url.URL) *YNProxy {
+	if target == nil {
+		return nil
+	}
+
+	p := NewYNProxy()
+	p.SetTarget(target)
+
+	fmt.Println("p:", p.target.Scheme,p.target.Host,p.target.Path)
+	return p
+}
+
+func (p *YNProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	serveHTTP(rw, req)
 }
 
 func serveHTTP(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +96,7 @@ func serveHTTP(w http.ResponseWriter, r *http.Request) {
 	var transport http.Transport
 	resp, err := transport.RoundTrip(rr)
 	klog.Infoln(err)
-	klog.Infoln("Resp-Headers: %v\n", resp.Header)
+	klog.Infoln("x-forwarded-for: %v\n", resp.Header)
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -87,7 +112,8 @@ func serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 	dH := w.Header()
 	copyHeader(resp.Header, &dH)
-	dH.Add("Requested-Host", rr.Host)
+	//dH.Add("Requested-Host", rr.Host)
+	dH.Add("x-forwarded-for", rr.Host)
 
 	_, err = w.Write(body)
 	if err != nil {
@@ -104,19 +130,21 @@ func copyHeader(source http.Header, dest *http.Header){
 	}
 }
 
-func (p *Proxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
+func (p *YNProxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	p.target = target
-	return ReverseProxy(target)
+	return NewReverseProxy(target)
 }
 
-func ReverseProxy(target *url.URL) *httputil.ReverseProxy {
+func NewReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	if target == nil {
 		panic(errors.New("target is nil"))
 	}
 	return httputil.NewSingleHostReverseProxy(target)
 }
 
-func (p *Proxy) direct(r *http.Request) *http.Request {
+func (p *YNProxy) direct(r *http.Request) *http.Request {
+	director := buildDirector(r)
+	p.director = director
 	return customDirectorPolicy(p.target, r)
 }
 
@@ -131,5 +159,17 @@ func NewRandReverseProxy(targets []*url.URL) *httputil.ReverseProxy {
 	i := rand.Int()%len(targets)
 	target := targets[rand.Int()%len(targets)]
 	fmt.Println("rand url index:", i, target)
-	return httputil.NewSingleHostReverseProxy(target)
+	return NewReverseProxy(target)
+}
+
+func NewReverseProxies(targets []*url.URL) []*httputil.ReverseProxy {
+	fmt.Println(len(targets))
+	sfr := make([]*httputil.ReverseProxy,0)
+	for _, v := range targets {
+		value := v
+		fmt.Println("url:", value)
+		fr := NewReverseProxy(value)
+		sfr = append(sfr, fr)
+	}
+	return sfr
 }

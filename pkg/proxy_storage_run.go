@@ -9,6 +9,7 @@ import (
 	"k8s.io/klog/v2"
 	"math/rand"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 
 const (
 	target = "172.16.0.5:8081"
+	target1 = "127.0.0.1:8081"
 	target2 = "127.0.0.2:8081"
 	target3 = "127.0.0.3:8081"
 	target4 = "127.0.0.4:8081"
@@ -69,7 +71,7 @@ func main() {
 	}
 	fmt.Println("get  value:", string(data[:]))
 
-	if dest, err := url.Parse(protocol+target); err != nil {
+	if dest, err := url.Parse(protocol+target1); err != nil {
 		klog.Errorln(err)
 	} else {
 		urls := make([]*url.URL,0)
@@ -129,11 +131,76 @@ func main() {
 			urls = append(urls, url10)
 		}
 
-		randProxy := proxy.NewRandReverseProxy(urls)
-		fmt.Println("urls:", urls)
-		err := http.ListenAndServe(":8082", randProxy)
-		if err != nil {
-			fmt.Println(err)
+		//v1: ok
+		proxies := proxy.NewReverseProxies(urls)
+		fmt.Println(proxies)
+		e := funcListenAndServe(proxies)
+		if e != nil {
+			fmt.Println(e)
+		}
+
+		//v2: panic
+		//proxies := make([]*proxy.YNProxy,0)
+		//for _, v := range urls {
+		//	value := v
+		//	if value == nil {
+		//		fmt.Println("v:", nil)
+		//		return
+		//	}
+		//	var p *proxy.YNProxy
+		//
+		//	fmt.Println(value.Scheme,value.Host,value.Path)
+		//	p = proxy.NewProxyWith(value)
+		//	proxies = append(proxies, p)
+		//}
+		//
+		//err := ListenAndServe(proxies)
+		//if err != nil {
+		//	return
+		//}
+
+		select {
 		}
 	}
+}
+
+func ListenAndServe(proxies []*proxy.YNProxy) error {
+	var err error
+	for i, v := range proxies {
+		value := v
+		port := fmt.Sprintf(":%d", 8082 + i)
+		fmt.Println("port:", port)
+
+		go func(v *proxy.YNProxy) {
+			fmt.Println("target host:",value,",port:",port)
+			e := http.ListenAndServe(port, v)
+			if e != nil {
+				err = e
+				fmt.Println(err)
+			}
+		}(value)
+	}
+
+	return err
+}
+
+
+func funcListenAndServe(proxies []*httputil.ReverseProxy) error {
+	var err error
+	for i, v := range proxies {
+		value := v
+		port := fmt.Sprintf(":%d", 8082 + i)
+		fmt.Println("port:", port)
+
+		go func(v *httputil.ReverseProxy) {
+			fmt.Println("target host:",value,",port:",port)
+			e := http.ListenAndServe(port, v)
+			if e != nil {
+				err = e
+				fmt.Println(err)
+			}
+		}(value)
+	}
+
+	return err
 }
