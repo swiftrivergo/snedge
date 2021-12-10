@@ -193,10 +193,10 @@ func funcListenAndServe(proxies []*httputil.ReverseProxy) error {
 		port := fmt.Sprintf(":%d", 8082 + i)
 		fmt.Println("port:", port)
 
-		go func(v chan *httputil.ReverseProxy, p string ) {
-			vv := <- v
-			vp := p
-			fmt.Println("target host:", vv, ",port:",vp)
+		go func(rp chan *httputil.ReverseProxy, handler string ) {
+			vv := <- rp
+			vp := handler
+			fmt.Println("target host:", vv, ", port:", vp)
 			e := http.ListenAndServe(vp, vv)
 			if e != nil {
 				err = e

@@ -167,7 +167,8 @@ func NewReverseProxies(targets []*url.URL) []*httputil.ReverseProxy {
 	sfr := make([]*httputil.ReverseProxy,0)
 	for _, v := range targets {
 		value := v
-		fmt.Println("url:", value)
+		fmt.Println("url:", value.Scheme, value.Host, value.Path,
+			",", value.Hostname(),value.RequestURI(),value.Port())
 		fr := NewReverseProxy(value)
 		sfr = append(sfr, fr)
 	}
