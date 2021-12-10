@@ -13,15 +13,15 @@ type Middleware interface {
 type HandlerWrappers []Middleware
 
 type tunnelServer struct {
-	//egressSelectorEnable     bool
-	//interceptorServerUDSFile string
+	egressSelectorEnable     bool
+	interceptorServerUDSFile string
 	masterAddr               string
 	masterInsecureAddr       string
 	agentAddr                string
 	serverCount              int
 	tlsCfg                   *tls.Config
 	wrappers                 []Middleware
-	//proxyStrategy            string
+	proxyStrategy            string
 }
 
 func newTunnelServer() server.TunnelServer {

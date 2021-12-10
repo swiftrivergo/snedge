@@ -6,11 +6,4 @@ type Storage interface {
 	Update(key string, cache []byte) error
 	Get(key string) ([]byte, error)
 	Path() string
-
-	// GetOne Get One
-	//GetOne() (string, []byte)
-
-	//Exist(key string) (bool, error)
-	//List(key string) ([][]byte, error)
-	//ListKeys(key string) ([]string, error)
 }
