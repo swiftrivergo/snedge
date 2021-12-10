@@ -188,18 +188,21 @@ func ListenAndServe(proxies []*proxy.YNProxy) error {
 func funcListenAndServe(proxies []*httputil.ReverseProxy) error {
 	var err error
 	for i, v := range proxies {
-		value := v
+		val := make(chan *httputil.ReverseProxy, 1)
+		val <- v
 		port := fmt.Sprintf(":%d", 8082 + i)
 		fmt.Println("port:", port)
 
-		go func(v *httputil.ReverseProxy) {
-			fmt.Println("target host:",value,",port:",port)
-			e := http.ListenAndServe(port, v)
+		go func(v chan *httputil.ReverseProxy, p string ) {
+			vv := <- v
+			vp := p
+			fmt.Println("target host:", vv, ",port:",vp)
+			e := http.ListenAndServe(vp, vv)
 			if e != nil {
 				err = e
 				fmt.Println(err)
 			}
-		}(value)
+		}(val, port)
 	}
 
 	return err
