@@ -1,6 +1,6 @@
 module github.com/swiftrivergo/snedge
 
-go 1.17
+go 1.18
 
 require (
 	github.com/morikuni/aec v1.0.0
