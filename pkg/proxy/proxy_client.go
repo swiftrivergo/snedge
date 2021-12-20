@@ -15,19 +15,37 @@ type Tunnel interface {
 }
 
 type tunnel struct {
-	TCP string
-	Port string
+	Addr string
+	tcp  string
+	host string
+	port string
+}
+
+func (t *tunnel) GetAddr() string {
+	return t.host + ":" + t.port
+}
+
+func (t *tunnel) SetAddr(address string) {
+	t.Addr = address
+	if strings.Index(t.Addr, ":") == -1 {
+		t.port = "80"
+	} else {
+		t.host = strings.Split(t.Addr, ":")[0]
+		t.port = strings.SplitAfter(t.Addr, ":")[1]
+		fmt.Println(t.host, t.port)
+	}
 }
 
 func New() *tunnel {
 	tl := new(tunnel)
-	tl.TCP = "tcp"
-	tl.Port = "80"
+	tl.tcp = "tcp"
+	tl.host = ""
+	tl.port = "80"
 	return tl
 }
 
 func (t *tunnel) Listen() error {
-	l, err := net.Listen(t.TCP, ":" + t.Port)
+	l, err := net.Listen(t.tcp, t.GetAddr())
 
 	if err != nil {
 		log.Panic(err)

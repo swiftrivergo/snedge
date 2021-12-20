@@ -143,7 +143,7 @@ func main() {
 
 		//v2:
 		tl := proxy.New()
-		tl.Port = "8082"
+		tl.Addr = ":8082"
 
 		go func() {
 			//Todo: port should be set by user

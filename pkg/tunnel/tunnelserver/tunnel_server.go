@@ -1,4 +1,4 @@
-package tunnel
+package tunnelserver
 
 import (
 	"crypto/tls"
