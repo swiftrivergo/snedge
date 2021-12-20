@@ -76,9 +76,7 @@ func HandleHTTP(rw http.ResponseWriter, req *http.Request) {
 
 func copyHeader(dst, src http.Header) {
 	for k, vv := range src {
-		fmt.Println("k:", k)
-		for i, v := range vv {
-			fmt.Println("v:", v, "index:", i)
+		for _, v := range vv {
 			dst.Add(k, v)
 		}
 	}

@@ -44,19 +44,15 @@ func main() {
 	tl = tu
 
 	if proto == "http" {
-		fmt.Println("http:", proto)
-
 		go func(t proxy.Tunnel) {
 			//Todo: addr should be set by user
 			log.Fatal(tl.Listen())
 		}(tl)
 	} else {
-		fmt.Println("https:", proto)
 		go func(t proxy.Tunnel) {
 			//Todo: TLS should be support; addr should be set by user
-			log.Fatal(tl.Listen())
+			log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
 		}(tl)
-		//log.Fatal(server.ListenAndServeTLS("",""))
 	}
 
 	select {
