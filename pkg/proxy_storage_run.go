@@ -4,9 +4,11 @@ import (
 	"fmt"
 	_ "github.com/spf13/cobra"
 	"github.com/swiftrivergo/snedge/pkg/proxy"
+	"github.com/swiftrivergo/snedge/pkg/proxy/ynproxy"
 	"github.com/swiftrivergo/snedge/pkg/storage"
 	boltstorage "github.com/swiftrivergo/snedge/pkg/storage/bolt"
 	"k8s.io/klog/v2"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -131,47 +133,39 @@ func main() {
 			urls = append(urls, url10)
 		}
 
-		//v1: ok
-		proxies := proxy.NewReverseProxies(urls)
-		fmt.Println(proxies)
-		e := funcListenAndServe(proxies)
-		if e != nil {
-			fmt.Println(e)
-		}
+		//v1:
+		//proxies := proxy.NewReverseProxies(urls)
+		//fmt.Println(proxies)
+		//e := funcListenAndServe(proxies)
+		//if e != nil {
+		//	fmt.Println(e)
+		//}
 
-		//v2: panic
-		//proxies := make([]*proxy.YNProxy,0)
-		//for _, v := range urls {
-		//	value := v
-		//	if value == nil {
-		//		fmt.Println("v:", nil)
-		//		return
-		//	}
-		//	var p *proxy.YNProxy
-		//
-		//	fmt.Println(value.Scheme,value.Host,value.Path)
-		//	p = proxy.NewProxyWith(value)
-		//	proxies = append(proxies, p)
-		//}
-		//
-		//err := ListenAndServe(proxies)
-		//if err != nil {
-		//	return
-		//}
+		//v2:
+		tl := proxy.New()
+		tl.Port = "8082"
+
+		go func() {
+			//Todo: port should be set by user
+			err := tl.Listen()
+			if err != nil {
+				log.Println(err)
+			}
+		}()
 
 		select {
 		}
 	}
 }
 
-func ListenAndServe(proxies []*proxy.YNProxy) error {
+func ListenAndServe(proxies []*ynproxy.YNProxy) error {
 	var err error
 	for i, v := range proxies {
 		value := v
 		port := fmt.Sprintf(":%d", 8082 + i)
 		fmt.Println("port:", port)
 
-		go func(v *proxy.YNProxy) {
+		go func(v *ynproxy.YNProxy) {
 			fmt.Println("target host:",value,",port:",port)
 			e := http.ListenAndServe(port, v)
 			if e != nil {

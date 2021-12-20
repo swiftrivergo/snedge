@@ -139,7 +139,7 @@ func (s *ynEdgeHubServer) Run() {
 	go func() {
 		err := s.hub.ListenAndServe()
 		if err != nil {
-			panic(err)
+			panic(any(err))
 		}
 	}()
 
@@ -147,13 +147,13 @@ func (s *ynEdgeHubServer) Run() {
 		go func() {
 			err := s.dummyProxy.ListenAndServe()
 			if err != nil {
-				panic(err)
+				panic(any(err))
 			}
 		}()
 		go func() {
 			err := s.dummySecureProxy.ListenAndServeTLS("", "")
 			if err != nil {
-				panic(err)
+				panic(any(err))
 			}
 		}()
 	}
@@ -161,13 +161,13 @@ func (s *ynEdgeHubServer) Run() {
 	go func() {
 		err := s.secureProxy.ListenAndServeTLS("", "")
 		if err != nil {
-			panic(err)
+			panic(any(err))
 		}
 	}()
 
 	err := s.proxy.ListenAndServe()
 	if err != nil {
-		panic(err)
+		panic(any(err))
 	}
 }
 
