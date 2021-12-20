@@ -40,7 +40,7 @@ func NewYNProxy() *YNProxy {
 	//解析这个 URL 并确保解析没有出错。
 	u, err := url.Parse(s)
 	if err != nil {
-		panic(err)
+		panic(any(err))
 	}
 	return &YNProxy{
 		target:   u,
@@ -137,7 +137,8 @@ func (p *YNProxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 
 func NewReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	if target == nil {
-		panic(errors.New("target is nil"))
+		fmt.Println(target)
+		panic(any(errors.New("<nil>")))
 	}
 	return httputil.NewSingleHostReverseProxy(target)
 }
