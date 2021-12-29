@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/swiftrivergo/snedge/pkg/proxy"
 	"github.com/swiftrivergo/snedge/pkg/tunnel"
+	"github.com/swiftrivergo/snedge/pkg/util"
 	"log"
 	"net/http"
 )
@@ -27,29 +27,32 @@ func main() {
 		Addr: ":8082",
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodConnect {
-				tunnel.HandleTunnel(w, r)
+				util.HandleTunnel(w, r)
 			} else {
-				tunnel.HandleHTTP(w, r)
+				util.HandleHTTP(w, r)
 			}
 		}),
 		// Disable HTTP/2.
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
+	p := tunnel.NewProxy()
+
 	//v2:
-	var tl proxy.Tunnel
-	tu := proxy.New()
+	var tl tunnel.Tunnel
+	tu := tunnel.New()
 	tu.SetAddr(server.Addr)
-	fmt.Println(server.Addr, tu.GetAddr())
+	log.Println("server start:", server.Addr, "listen GetListenAddr():", tu.GetListenAddr())
 	tl = tu
+	p.Tunnel = tl
 
 	if proto == "http" {
-		go func(t proxy.Tunnel) {
+		go func(t tunnel.Tunnel) {
 			//Todo: addr should be set by user
-			log.Fatal(tl.Listen())
+			log.Fatal(p.Tunnel.Listen())
 		}(tl)
 	} else {
-		go func(t proxy.Tunnel) {
+		go func(t tunnel.Tunnel) {
 			//Todo: TLS should be support; addr should be set by user
 			log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
 		}(tl)

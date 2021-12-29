@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	_ "github.com/spf13/cobra"
-	"github.com/swiftrivergo/snedge/pkg/proxy"
 	"github.com/swiftrivergo/snedge/pkg/proxy/ynproxy"
 	"github.com/swiftrivergo/snedge/pkg/storage"
 	boltstorage "github.com/swiftrivergo/snedge/pkg/storage/bolt"
+	"github.com/swiftrivergo/snedge/pkg/tunnel"
 	"k8s.io/klog/v2"
 	"log"
 	"math/rand"
@@ -142,7 +142,7 @@ func main() {
 		//}
 
 		//v2:
-		tl := proxy.New()
+		tl := tunnel.New()
 		tl.Addr = ":8082"
 
 		go func() {

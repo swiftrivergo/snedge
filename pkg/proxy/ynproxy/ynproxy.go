@@ -2,7 +2,7 @@ package ynproxy
 
 import (
 	"fmt"
-	"github.com/swiftrivergo/snedge/pkg/proxy"
+	"github.com/swiftrivergo/snedge/pkg/util"
 	"io"
 	"io/ioutil"
 	_ "k8s.io/apimachinery/pkg/util/rand"
@@ -142,5 +142,5 @@ func customDirectorPolicy(target *url.URL, r *http.Request) *http.Request {
 
 func (p *YNProxy) ReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	p.target = target
-	return proxy.NewReverseProxy(target)
+	return util.NewReverseProxy(target)
 }
