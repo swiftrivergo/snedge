@@ -55,7 +55,7 @@ func main() {
 		}(p.Tunnel)
 	} else {
 		go func(t tunnel.Tunnel) {
-			//Todo: TLS should be supported; addr should be set by user
+			//Todo: TLS should be supportted; addr should be set by user
 			log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
 		}(tu)
 	}
