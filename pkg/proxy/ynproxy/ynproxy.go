@@ -38,7 +38,7 @@ func NewYNProxy() *YNProxy {
 	//解析这个 URL 并确保解析没有出错。
 	u, err := url.Parse(s)
 	if err != nil {
-		panic(any(err))
+		panic(err)
 	}
 	return &YNProxy{
 		target:   u,

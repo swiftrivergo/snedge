@@ -12,7 +12,7 @@ import (
 func NewReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	if target == nil {
 		fmt.Println(target)
-		panic(any(errors.New("<nil>")))
+		panic(errors.New("<nil>"))
 	}
 	return httputil.NewSingleHostReverseProxy(target)
 }

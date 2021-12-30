@@ -36,17 +36,21 @@ type Server struct {
 
 // Serve traffic
 func (s *Server) Serve() {
+	log.Printf("BindAddr: [%s] Port: [%d] ControlPort:[%d]", s.BindAddr, s.Port, s.ControlPort)
+
 	if s.ControlPort == s.Port {
 		s.server = remotedialer.New(s.authorized, remotedialer.DefaultErrorWriter)
 		s.router.Server = s.server
 
-		http.HandleFunc("/", s.proxy)
-		http.HandleFunc("/tunnel", s.tunnel)
+		//http.HandleFunc("/", util.HandleHTTP)
+		//http.HandleFunc("/tunnel", util.HandleTunnel)
 
-		log.Printf("Control Plane Listening on %s:%d\n", s.BindAddr, s.ControlPort)
-		log.Printf("Data Plane Listening on %s:%d\n", s.BindAddr, s.Port)
+		server := http.NewServeMux()
+		server.HandleFunc("/", s.proxy)
+		server.HandleFunc("/tunnel", s.tunnel)
 
-		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.Port), nil); err != nil {
+		log.Printf("(1) Data Plane Listening on %s:%d:%d\n", s.BindAddr, s.ControlPort, s.Port)
+		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.Port), server); err != nil {
 			log.Fatal(err)
 		}
 	} else {
@@ -61,10 +65,11 @@ func (s *Server) Serve() {
 			s.server = remotedialer.New(s.authorized, remotedialer.DefaultErrorWriter)
 			s.router.Server = s.server
 
-			controlServer.HandleFunc("/tunnel", s.tunnel)
+			controlServer.HandleFunc("/", s.proxy)
+			//controlServer.HandleFunc("/tunnel", s.tunnel)
 
-			log.Printf("Control Plane Listening on %s:%d\n", s.BindAddr, s.ControlPort)
-			if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.ControlPort), controlServer); err != nil {
+			log.Printf("(2) Data Plane Listening on %s:%d\n", s.BindAddr, s.Port)
+			if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.Port), controlServer); err != nil {
 				log.Fatal(err)
 			}
 
@@ -78,9 +83,9 @@ func (s *Server) Serve() {
 			controlServer.HandleFunc("/", s.proxy)
 
 			http.HandleFunc("/", s.proxy)
-			log.Printf("Data Plane Listening on %s:%d\n", s.BindAddr, s.Port)
+			log.Printf("(2) Control Plane Listening on %s:%d\n", s.BindAddr, s.ControlPort)
 
-			if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.Port), controlServer); err != nil {
+			if err := http.ListenAndServe(fmt.Sprintf("%s:%d", s.BindAddr, s.ControlPort), controlServer); err != nil {
 				log.Fatal(err)
 			}
 		}()
@@ -113,7 +118,7 @@ func (s *Server) proxy(w http.ResponseWriter, r *http.Request) {
 	httpProxy.ServeHTTP(w, r)
 }
 
-func (s Server) Error(w http.ResponseWriter, req *http.Request, err error) {
+func (s *Server) Error(w http.ResponseWriter, req *http.Request, err error) {
 	remotedialer.DefaultErrorWriter(w, req, http.StatusInternalServerError, err)
 }
 
