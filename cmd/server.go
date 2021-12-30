@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/swiftrivergo/snedge/pkg/abondoned/tunnel/server"
+	"github.com/swiftrivergo/snedge/pkg/server/tunnel/server"
 	"io/ioutil"
 	"log"
 	"os"

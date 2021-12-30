@@ -10,18 +10,16 @@ import (
 	"strings"
 )
 
-type ListenFunc func(string) error
-
 type tunnel struct {
 	tcp  string
 	Addr string
+	forwardPort string
+
+	listenAddr string
+	listenPort string
 
 	dialAddr string
 	dialPort string
-
-
-	ListenHost string
-	ListenPort string
 
 	method string
 	host string
@@ -32,35 +30,39 @@ type tunnel struct {
 	remote string
 }
 
-func New() *tunnel {
-	tl := new(tunnel)
-	tl.tcp = "tcp"
-	return tl
-}
+var p *tunnel
 
-func (t *tunnel) SetListenPort(port string) {
-	t.ListenPort = port
+func New() *tunnel {
+	p = new(tunnel)
+	//The network must be "tcp", "tcp4", "tcp6", "unix" or "unixpacket".
+	p.tcp = "tcp"
+	return p
 }
 
 func (t *tunnel) GetListenAddr() string {
-	return t.ListenHost + ":" + t.ListenPort
+	return t.listenAddr + ":" + t.listenPort
+}
+
+func (t *tunnel) SetForwardPort(forwarded string) {
+	t.forwardPort = forwarded
 }
 
 func (t *tunnel) SetAddr(address string) {
-	t.dialAddr = strings.Trim(address, " ")
-	if strings.Index(t.dialAddr, ":") == -1 {
-		t.ListenHost = ":80"
+	t.Addr = address
+	addr := strings.Trim(address, " ")
+	if strings.Index(addr, ":") == -1 {
+		t.listenAddr = ":80"
 	} else {
-		t.ListenHost = strings.Split(t.dialAddr, ":")[0]
-		t.ListenPort = strings.SplitAfter(strings.Trim(t.dialAddr, " "), ":")[1]
-		log.Println(address, t.dialAddr, t.tcp, t.ListenHost, t.ListenPort)
+		t.listenAddr = strings.Split(addr, ":")[0]
+		t.listenPort = strings.SplitAfter(strings.Trim(addr, " "), ":")[1]
+		log.Println(address, addr, t.tcp, t.listenAddr, t.listenPort)
 	}
 }
 
 func (t *tunnel) Listen() error {
 	l, err := net.Listen(t.tcp, t.GetListenAddr())
 
-	log.Println("tunnel listen tcp:", t.tcp, "GetListenAddr():", t.GetListenAddr(), "ListenPort:", t.ListenPort)
+	log.Println("listen tcp:", t.tcp, "GetListenAddr():", t.GetListenAddr())
 	if err != nil {
 		log.Panic(err)
 	}
@@ -70,12 +72,12 @@ func (t *tunnel) Listen() error {
 			log.Panic(err)
 		}
 
-		go handleClient(c, "8081")
+		go handleConnForward(c, t.forwardPort)
 	}
 	return nil
 }
 
-func handleClient(c net.Conn, forwardPort string) {
+func handleConnForward(c net.Conn, forwardPort string) {
 	if c == nil {
 		return
 	}
@@ -86,9 +88,8 @@ func handleClient(c net.Conn, forwardPort string) {
 		}
 	}(c)
 
-	tl := new(tunnel)
-	tl.local = c.LocalAddr().String()
-	tl.remote = c.RemoteAddr().String()
+	p.local = c.LocalAddr().String()
+	p.remote = c.RemoteAddr().String()
 	log.Println("local:", c.LocalAddr(),"remote:", c.RemoteAddr())
 	log.Println("network local:", c.LocalAddr().Network(), c.RemoteAddr().Network())
 
@@ -98,7 +99,8 @@ func handleClient(c net.Conn, forwardPort string) {
 		log.Println(err)
 		return
 	}
-	//var method, host, address string
+
+	tl := p
 	sscanf, err := fmt.Sscanf(string(b[:bytes.IndexByte(b[:],'\n')]), "%s%s", &tl.method, &tl.host)
 	if err != nil {
 		log.Println(sscanf, err)
@@ -122,7 +124,7 @@ func handleClient(c net.Conn, forwardPort string) {
 	tl.hostPort = hostURL.Port()
 
 	if forwardPort == "" {
-		if tl.ListenPort == "" {
+		if tl.listenPort == "" {
 			tl.dialAddr = tl.hostName + ":80"
 		}
 	} else {

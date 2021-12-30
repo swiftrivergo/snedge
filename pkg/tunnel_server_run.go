@@ -36,26 +36,28 @@ func main() {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
-	p := tunnel.NewProxy()
-
 	//v2:
-	var tl tunnel.Tunnel
+	p := tunnel.NewProxy()
 	tu := tunnel.New()
-	tu.SetAddr(server.Addr)
-	log.Println("server start:", server.Addr, "listen GetListenAddr():", tu.GetListenAddr())
-	tl = tu
-	p.Tunnel = tl
+	tu.SetForwardPort("8081")
+	tu.Addr = server.Addr
+	p.Tunnel = tu
+
+	p.SetServer(server)
+	p.SetAddr(server.Addr)
+
+	log.Println("server start:", tu.Addr, "listen GetListenAddr():", tu.GetListenAddr())
 
 	if proto == "http" {
 		go func(t tunnel.Tunnel) {
 			//Todo: addr should be set by user
-			log.Fatal(p.Tunnel.Listen())
-		}(tl)
+			log.Fatal(t.Listen())
+		}(p.Tunnel)
 	} else {
 		go func(t tunnel.Tunnel) {
 			//Todo: TLS should be support; addr should be set by user
 			log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
-		}(tl)
+		}(tu)
 	}
 
 	select {
