@@ -43,11 +43,11 @@ func (t *tunnel) GetListenAddr() string {
 	return t.listenAddr + ":" + t.listenPort
 }
 
-func (t *tunnel) SetForwardPort(forwarded string) {
-	t.forwardPort = forwarded
+func (t *tunnel) SetForwardPort(port string) {
+	t.forwardPort = port
 }
 
-func (t *tunnel) SetAddr(address string) {
+func (t *tunnel) bindListenAddr(address string) {
 	t.Addr = address
 	addr := strings.Trim(address, " ")
 	if strings.Index(addr, ":") == -1 {
@@ -57,6 +57,10 @@ func (t *tunnel) SetAddr(address string) {
 		t.listenPort = strings.SplitAfter(strings.Trim(addr, " "), ":")[1]
 		log.Println(address, addr, t.tcp, t.listenAddr, t.listenPort)
 	}
+}
+
+func (t *tunnel) SetListenAddr(address string) {
+	t.bindListenAddr(address)
 }
 
 func (t *tunnel) Listen() error {
