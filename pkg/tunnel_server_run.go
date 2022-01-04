@@ -23,6 +23,8 @@ func main() {
 		//log.Fatal("Protocol must be either http or https")
 		fmt.Println("Protocol must be either http or https")
 	}
+
+	//v2:
 	server := &http.Server{
 		Addr: ":8082",
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,8 +37,6 @@ func main() {
 		// Disable HTTP/2.
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
-
-	//v2:
 	p := tunnel.NewProxy()
 	tu := tunnel.New()
 	tu.SetForwardPort("8081")

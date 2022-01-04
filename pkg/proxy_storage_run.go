@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	_ "github.com/spf13/cobra"
 	"github.com/swiftrivergo/snedge/pkg/proxy/ynproxy"
 	"github.com/swiftrivergo/snedge/pkg/storage"
 	boltstorage "github.com/swiftrivergo/snedge/pkg/storage/bolt"
 	"github.com/swiftrivergo/snedge/pkg/tunnel"
+	"github.com/swiftrivergo/snedge/pkg/util"
 	"k8s.io/klog/v2"
 	"log"
 	"math/rand"
@@ -142,12 +144,30 @@ func main() {
 		//}
 
 		//v2:
-		tl := tunnel.New()
-		tl.Addr = ":8082"
+		server := &http.Server{
+			Addr: ":8082",
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodConnect {
+					util.HandleTunnel(w, r)
+				} else {
+					util.HandleHTTP(w, r)
+				}
+			}),
+			// Disable HTTP/2.
+			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
+		}
+		p := tunnel.NewProxy()
+		tu := tunnel.New()
+		tu.SetForwardPort("8081")
+		tu.Addr = server.Addr
+		p.Tunnel = tu
+
+		p.SetServer(server)
+		p.SetAddr(server.Addr)
 
 		go func() {
 			//Todo: port should be set by user
-			err := tl.Listen()
+			err := tu.Listen()
 			if err != nil {
 				log.Println(err)
 			}
