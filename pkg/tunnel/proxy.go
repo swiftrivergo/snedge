@@ -46,7 +46,7 @@ func (p *Proxy) SetAddr(addr string) {
 	switch p.Tunnel.(type) {
 	case *tunnel:
 		tl := p.Tunnel.(*tunnel)
-		tl.SetAddr(addr)
+		tl.SetListenAddr(addr)
 	default:
 	}
 }

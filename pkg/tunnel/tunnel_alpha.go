@@ -127,6 +127,10 @@ func handleConnForward(c net.Conn, forwardPort string) {
 	tl.hostName = hostURL.Hostname()
 	tl.hostPort = hostURL.Port()
 
+	log.Println("host:", tl.host,
+		"hostName:", tl.hostName,
+		"hostPort:", tl.hostPort)
+
 	if forwardPort == "" {
 		if tl.listenPort == "" {
 			tl.dialAddr = tl.hostName + ":80"

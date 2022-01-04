@@ -145,7 +145,7 @@ func main() {
 
 		//v2:
 		server := &http.Server{
-			Addr: ":8082",
+			Addr: "127.1.1.1:8082",
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodConnect {
 					util.HandleTunnel(w, r)
