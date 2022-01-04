@@ -145,7 +145,7 @@ func main() {
 
 		//v2:
 		server := &http.Server{
-			Addr: "127.1.1.1:8082",
+			Addr: ":8082",
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodConnect {
 					util.HandleTunnel(w, r)
@@ -159,7 +159,7 @@ func main() {
 		p := tunnel.NewProxy()
 		tu := tunnel.New()
 		tu.SetForwardPort("8081")
-		tu.Addr = server.Addr
+		//tu.Addr = server.Addr
 		p.Tunnel = tu
 
 		p.SetServer(server)
