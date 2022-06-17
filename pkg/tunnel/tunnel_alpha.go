@@ -62,7 +62,7 @@ func (t *tunnel) GetListenAddr() string {
 	return t.listenAddr + ":" + t.listenPort
 }
 
-func (t *tunnel) SetForwardPort(port string) {
+func (t *tunnel) BindForwardPort(port string) {
 	t.forwardPort = port
 }
 
@@ -78,11 +78,11 @@ func (t *tunnel) bindListenAddr(address string) {
 	}
 }
 
-func (t *tunnel) SetListenAddr(address string) {
+func (t *tunnel) AddListenAddr(address string) {
 	t.bindListenAddr(address)
 }
 
-func (t *tunnel) Listen() error {
+func (t *tunnel) Run() error {
 	l, err := net.Listen(t.tcp, t.GetListenAddr())
 
 	log.Println("listen tcp:", t.tcp, "GetListenAddr():", t.GetListenAddr())
@@ -154,7 +154,7 @@ func handleConnForward(c net.Conn, forwardPort string) {
 		}
 	}
 
-	//log.Println("Dial server Addr:", tl.dialAddr)
+	log.Println("Dial server Addr:", tl.dialAddr)
 	server, err := net.Dial("tcp", tl.dialAddr)
 	if err != nil {
 		return

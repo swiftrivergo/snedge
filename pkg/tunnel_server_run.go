@@ -39,18 +39,15 @@ func main() {
 	}
 	p := tunnel.NewProxy()
 	tu := tunnel.New()
-	tu.SetForwardPort("8081")
+	tu.BindForwardPort("8081")
 	p.Tunnel = tu
-
 	p.SetServer(server)
-	p.SetAddr(server.Addr)
-
 	//log.Println("server start:", tu.addr, "listen GetListenAddr():", tu.GetListenAddr())
 
 	if proto == "http" {
 		go func(t tunnel.Tunnel) {
 			//Todo: addr should be set by user
-			log.Fatal(t.Listen())
+			log.Fatal(t.Run())
 		}(p.Tunnel)
 	} else {
 		go func(t tunnel.Tunnel) {

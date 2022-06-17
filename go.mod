@@ -1,8 +1,9 @@
 module github.com/swiftrivergo/snedge
 
-go 1.18
+go 1.17
 
 require (
+	github.com/gorilla/mux v1.7.3
 	github.com/morikuni/aec v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/remotedialer v0.2.5

@@ -29,8 +29,8 @@ func (p *Proxy) ServeTunnel(w http.ResponseWriter, req *http.Request) {
 	util.HandleTunnel(w, req)
 }
 
-func (p *Proxy) Listen() error {
-	return p.Tunnel.Listen()
+func (p *Proxy) Run() error {
+	return p.Tunnel.Run()
 }
 
 func (p *Proxy) GetServer() *http.Server {
@@ -39,19 +39,20 @@ func (p *Proxy) GetServer() *http.Server {
 
 func (p *Proxy) SetServer(s *http.Server) {
 	p.server = s
-	p.SetAddr(p.server.Addr)
+	p.setAddr(p.server.Addr)
 }
 
-func (p *Proxy) SetAddr(addr string) {
+func (p *Proxy) setAddr(addr string) {
 	switch p.Tunnel.(type) {
 	case *tunnel:
 		tl := p.Tunnel.(*tunnel)
-		tl.SetListenAddr(addr)
+		//Todo: net.Listener should be support.
+		tl.AddListenAddr(addr)
 	default:
 	}
 }
 
 func (p *Proxy) SetTunnel(t Tunnel) {
 	p.Tunnel = t
-	p.SetAddr(p.server.Addr)
+	p.setAddr(p.server.Addr)
 }

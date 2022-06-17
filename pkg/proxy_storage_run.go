@@ -158,16 +158,13 @@ func main() {
 		}
 		p := tunnel.NewProxy()
 		tu := tunnel.New()
-		tu.SetForwardPort("8081")
-		//tu.Addr = server.Addr
+		tu.BindForwardPort("8081")
 		p.Tunnel = tu
-
 		p.SetServer(server)
-		p.SetAddr(server.Addr)
 
 		go func() {
 			//Todo: port should be set by user
-			err := tu.Listen()
+			err := tu.Run()
 			if err != nil {
 				log.Println(err)
 			}

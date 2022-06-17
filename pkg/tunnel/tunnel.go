@@ -1,5 +1,5 @@
 package tunnel
 
 type Tunnel interface {
-	Listen() error
+	Run() error
 }
